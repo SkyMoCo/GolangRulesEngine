@@ -1,0 +1,73 @@
+// Traffic light rules
+//
+// Rule #1
+// If light is green and nobody waiting
+//    do nothing
+//
+// Rule #2
+// If light is green and sombody waiting
+//    turn yellow on
+//    turn green off
+//
+// If light is yellow and timer is < 10
+//    do nothing
+//
+//  If light is yellow and timer is > 10
+//    turn yellow off
+//    turn red on
+//    restart timer
+//
+//  If light is red and yellow is off and timer is < 10
+//    do nothing
+//
+//  If light is red and yellow is off and timer is > 10 
+//    turn yellow on
+//    restart timer
+//
+//  If red is on and yellow is on and timer < 10
+//    do nothing
+//
+//  If red is on and yellow is on and timer > 10
+//    turn yellow off
+//    turn red off
+//    turn timer off
+//    turn green on
+
+
+
+rule TurnOnGreenLight "Turn on green light when nobody is waiting" salience 10 {
+		 when
+				TF.Pedestrians == false && TF.GreenLightTimer == 0
+			then
+				Log("Turn on Green Light");
+				TF.TurnOnLightByName("green");
+				Retract("TurnOnGreenLight");
+}
+
+rule TurnOnYellowLight "Turn on yellow when someone is waiting" salience 10 {
+		 when
+				TF.Pedestrians == true && TF.YellowLightTimer == 0
+			then
+				Log("Turn off Green Light, turn on Yellow Light");		
+				TF.TurnOnLightByName("yellow");
+				TF.TurnOffLightByName("green");
+				Retract("TurnOnYellowLight");
+}
+
+rule TurnOnRedLight "Turn on red light when yellow light as been on for a time" salience 10 {
+		 when
+				TF.YellowLightTimer > 5 && TF.RedLightTimer == 0
+			then
+				Log("Turn off Yellow Light, turn on Red Light");		
+				TF.TurnOnLightByName("red");
+				TF.TurnOffLightByName("green");
+				Retract("TurnOnRedLight");
+}
+
+rule TurnOffRedLight "Turn off Red Light after a while" salience 10 {
+		 when
+				TF.RedLightTimer > 10
+			then
+				Log("Turn off Red Light");
+				TF.TurnOffLightByName("red");
+}
